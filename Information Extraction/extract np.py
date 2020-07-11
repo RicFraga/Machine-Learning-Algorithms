@@ -25,17 +25,6 @@ def join_reviews(file_names, path):
 
     return ''.join(unique)
 
-# This function tokenizes a set of sentences in words
-"""def tokenize_words(sentences):
-
-    words_tokens = []
-
-    for sentence in sentences:
-        words_tokens.append(word_tokenize(sentence))
-
-    return words_tokens
-"""
-
 # This function builds an array of tuples, each tuple contains the word and
 # the pos-tag of the word
 def pos_tag(sentences):
@@ -66,9 +55,6 @@ single_string = join_reviews(files, path)
 # Now we are going to tokenize the string in sentences
 sentences = sent_tokenize(single_string)
 
-# Now we tokenize the sentences as words
-#words = tokenize_words(sentences)
-
 # Then we are going to pos-tag the words of each sentence
 pos_tag = pos_tag(sentences)
 
@@ -93,6 +79,48 @@ for tag in pos_tag:
 
     for i in result.subtrees():
         if(i.label() == 'NP'):
+            f.write(str(i) + '\n')
+
+f.close()
+
+# Getting the phrases of the form
+# np + de + np
+
+grammar = """PS:
+                {<NOUN><ADP><PROPN><ADP><NOUN><ADP><PROPN>}
+                {<NOUN><ADP><PROPN><ADP><ADJ>*<NOUN><ADP><NOUN>}
+                {<NOUN><ADP><PROPN><ADP><DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN>}
+                {<NOUN><ADP><PROPN><ADP><ADV><CCONJ><ADV>*<ADJ>}
+
+                {<ADJ>*<NOUN><ADP><NOUN><ADP><NOUN><ADP><PROPN>}
+                {<ADJ>*<NOUN><ADP><NOUN><ADP><ADJ>*<NOUN><ADP><NOUN>}
+                {<ADJ>*<NOUN><ADP><NOUN><ADP><DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN>}
+                {<ADJ>*<NOUN><ADP><NOUN><ADP><ADV><CCONJ><ADV>*<ADJ>}
+
+                {<DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN><ADP><NOUN><ADP><PROPN>}
+                {<DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN><ADP><ADJ>*<NOUN><ADP><NOUN>}
+                {<DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN><ADP><DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN>}
+                {<DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN><ADP><ADV><CCONJ><ADV>*<ADJ>}
+
+                {<ADV><CCONJ><ADV>*<ADJ><ADP><NOUN><ADP><PROPN>}
+                {<ADV><CCONJ><ADV>*<ADJ><ADP><ADJ>*<NOUN><ADP><NOUN>}
+                {<ADV><CCONJ><ADV>*<ADJ><ADP><DET>*<NOUN><ADJ>*<ADP><DET>*<NOUN>}
+                {<ADV><CCONJ><ADV>*<ADJ><ADP><ADV><CCONJ><ADV>*<ADJ>}
+          """
+
+cp = nltk.RegexpParser(grammar)
+
+# Saving the np to a file
+f = open('posession', 'w')
+
+for tag in pos_tag:
+    try:
+        result = cp.parse(tag)
+    except:
+        pass
+
+    for i in result.subtrees():
+        if(i.label() == 'PS'):
             f.write(str(i) + '\n')
 
 f.close()
